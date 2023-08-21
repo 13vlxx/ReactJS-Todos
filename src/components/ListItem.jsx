@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 function ListItem({ itemData, deleteTodo }) {
     return (
         <li className="p-2 bg-zinc-200 mb-2 rounded flex">
