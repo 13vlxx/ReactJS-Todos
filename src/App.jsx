@@ -1,63 +1,86 @@
-import { useState } from "react";
+/* eslint-disable no-unused-vars */
 import { nanoid } from "nanoid";
-import ListItem from "./components/ListItem";
+import { useEffect, useState } from "react";
+import TodoList from "./components/TodoList";
 
 function App() {
-  const [todoList, setTodoList] = useState([]);
-
   const [todo, setTodo] = useState("");
-  const [showValidation, setShowValidation] = useState(false);
+  const [todoList, setTodoList] = useState([]);
+  const [emptyInputError, setEmptyInputError] = useState(false);
+  const [todoAlreadyExist, setTodoAlreadyExist] = useState(false);
 
-  function deleteTodo(id) {
-    setTodoList(todoList.filter((todo) => todo.id !== id));
-  }
+  useEffect(() => {
+    const storedTodoList = localStorage.getItem("todoList");
+
+    if (storedTodoList) {
+      setTodoList(JSON.parse(storedTodoList));
+    }
+  }, []);
 
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (todo === "") {
-      setShowValidation(true);
+    if (!todo) {
+      setEmptyInputError(true);
       return;
     }
-    setTodoList([...todoList, { id: nanoid(8), content: todo }]);
+
+    const todoAlreadyExist = todoList.some((item) => item.text === todo);
+
+    if (todoAlreadyExist) {
+      setTodoAlreadyExist(true);
+      return;
+    }
+
+    const newTodoList = [...todoList, { id: nanoid(8), text: todo }];
+    setTodoList(newTodoList);
     setTodo("");
-    setShowValidation(false);
+    setEmptyInputError(false);
+    setTodoAlreadyExist(false);
+
+    localStorage.setItem("todoList", JSON.stringify(newTodoList));
+  }
+
+  function deleteTodo(id) {
+    const newTodoList = todoList.filter((todo) => todo.id !== id);
+    setTodoList(newTodoList);
+
+    localStorage.setItem("todoList", JSON.stringify(newTodoList));
+  }
+
+  let errorMessage;
+  if (todoList.length !== 0) {
+    if (emptyInputError) {
+      errorMessage = <p className="mt-2 text-red-500">Veuillez bien remplir le champ...</p>;
+    } else if (todoAlreadyExist) {
+      errorMessage = <p className="mt-2 text-red-500">Tache déjà existante...</p>;
+    }
+  } else {
+    errorMessage = <p className="mt-2">Aucune tache à afficher...</p>;
   }
 
   return (
-    <div className="h-screen">
-      <div className="max-w-4xl mx-auto pt-20 px-6">
-        <h1 className="text-3xl text-slate-100 mb-4">ToDo List</h1>
-
-        <form onSubmit={handleSubmit} className="mb-10">
-          <label htmlFor="todo-item" className="text-slate-50">
-            Ajouter une chose à faire
-          </label>
-          <input
-            placeholder="Apprendre ReactJS"
-            type="text"
-            className="mt-1 block w-full rounded"
-            id="todo-item"
-            value={todo}
-            onChange={(e) => setTodo(e.target.value)}
-          />
-          {showValidation && (
-            <p className="text-red-400">Ajoutez d&apos;abord du contenu à votre tâche</p>
-          )}
-          <button className="mt-4 py-2 px-2 bg-slate-50 rounded min-w-[115px]">Ajouter</button>
-        </form>
-        <ul>
-          {todoList.length === 0 && (
-            <li className="text-slate-50 text-md">Pas d&apos;items à afficher...</li>
-          )}
-          {todoList.length > 0 &&
-            todoList.map((item) => (
-              <ListItem key={item.id} itemData={item} deleteTodo={deleteTodo} />
-            ))}
-        </ul>
-      </div>
+    <div className="min-h-screen bg-slate-900 text-slate-50 p-8">
+      <h1 className="text-3xl font-semibold select-none">React Todos</h1>
+      <form onSubmit={handleSubmit} className="flex gap-2 mt-4">
+        <input
+          onChange={(e) => setTodo(e.target.value)}
+          value={todo}
+          placeholder="Entrez une tache à réaliser"
+          className="text-slate-950 rounded w-full py-2 pl-2 outline-blue-600"
+          type="text"
+        />
+        <button className="bg-blue-600 px-2 rounded hover:bg-blue-700 transition-colors duration-100">
+          Valider
+        </button>
+      </form>
+      {errorMessage}
+      <ul className="mt-4">
+        {todoList.map((todo) => (
+          <TodoList key={todo.id} content={todo} deleteTodo={deleteTodo} />
+        ))}
+      </ul>
     </div>
   );
 }
-
 export default App;
