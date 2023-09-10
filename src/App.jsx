@@ -5,7 +5,12 @@ import TodoList from "./components/TodoList";
 
 function App() {
   const [todo, setTodo] = useState("");
-  const [todoList, setTodoList] = useState([]);
+  const [todoList, setTodoList] = useState([
+    {
+      id: nanoid(8),
+      text: "13vlxx",
+    },
+  ]);
   const [errors, setErrors] = useState({
     emptyInput: false,
     todoAlreadyExist: false,
@@ -27,7 +32,7 @@ function App() {
       return;
     }
 
-    const tae = todoList.some((item) => item.text === todo);
+    const tae = todoList.find((item) => item.text === todo);
 
     if (tae) {
       setErrors({ ...errors, todoAlreadyExist: true });
