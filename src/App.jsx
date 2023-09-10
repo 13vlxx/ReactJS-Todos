@@ -68,9 +68,13 @@ function App() {
 
   return (
     <div
-      className={`min-h-screen transition-all duration-500 bg-slate-900 text-slate-50 p-8 ${
+      className={`min-h-screen transition-all duration-500 text-slate-50 p-8 ${
         todo === "vertical" && "cursor-vertical-text"
-      } ${todo.includes("13vlxx") && "bg-slate-200 text-slate-950"}`}
+      } ${
+        todo.includes("13vlxx") || todoList.find((item) => item.text === "13vlxx")
+          ? "bg-slate-200 text-slate-950"
+          : "bg-slate-900"
+      }`}
     >
       <h1 className="text-3xl font-semibold select-none">React Todos</h1>
       <form onSubmit={handleSubmit} className="flex gap-2 mt-4">
@@ -86,7 +90,7 @@ function App() {
           className={`bg-blue-600 px-2 rounded hover:bg-blue-700 transition-colors duration-200 ${
             !todo && "bg-gray-500 hover:bg-gray-600 cursor-not-allowed"
           } ${
-            todo.includes("13vlxx")
+            todo.includes("13vlxx") || todoList.find((item) => item.text === "13vlxx")
               ? "bg-green-500 hover:bg-green-600 cursor-cell text-slate-50"
               : ""
           }`}
@@ -95,7 +99,13 @@ function App() {
         </button>
       </form>
       {errorMessage}
-      <ul className={`mt-4 ${todo.includes("13vlxx") ? "text-slate-50" : ""}`}>
+      <ul
+        className={`mt-4 ${
+          todo.includes("13vlxx") || todoList.find((item) => item.text === "13vlxx")
+            ? "text-slate-50"
+            : ""
+        }`}
+      >
         {todoList.map((todo) => (
           <TodoList key={todo.id} content={todo} deleteTodo={deleteTodo} inputValue={todo} />
         ))}
