@@ -51,11 +51,9 @@ function App() {
     errorMessage = <p className="text-red-600">Cette tâche à déjà été définie...</p>;
   }
 
-  console.log(!inputValue);
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-800 to-indigo-900">
-      <div className="min-w-[280px] sm:min-w-[450px] md:min-w-[700px] min-h-[700px] bg-slate-100 rounded-xl p-4">
+      <div className="min-w-[280px] sm:min-w-[450px] md:min-w-[700px] min-h-[600px] bg-slate-100 rounded-xl p-4">
         <h1 className="text-3xl font-semibold text-center">Liste des tâches à faire</h1>
         <h2 className="text-xl font-semibold text-center">
           {todosList.length > 0 ? `${todosList.length} tâches en cours...` : "Bienvenue !"}
@@ -90,7 +88,7 @@ function App() {
         )}
         {todosList.length === 0 && (
           <div className="flex flex-col justify-center items-center mt-24">
-            <img className="w-60 place-content-center" src={noTodo} alt="liste vide" />
+            <img className="w-40 md:w-60 place-content-center" src={noTodo} alt="liste vide" />
             <p className="mt-8 font-semibold">Aucune tâche à afficher...</p>
             <label
               htmlFor="todo"
