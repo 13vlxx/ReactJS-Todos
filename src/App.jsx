@@ -1,121 +1,113 @@
-/* eslint-disable no-unused-vars */
 import { nanoid } from "nanoid";
-import { useEffect, useState } from "react";
-import TodoList from "./components/TodoList";
+import { useState } from "react";
+import Todo from "./components/Todo";
+import noTodo from "./assets/noTodo.svg";
 
 function App() {
-  const [todo, setTodo] = useState("");
-  const [todoList, setTodoList] = useState([
-    {
-      id: nanoid(8),
-      text: "13vlxx",
-    },
-  ]);
-  const [errors, setErrors] = useState({
-    emptyInput: false,
-    todoAlreadyExist: false,
+  const [inputValue, setInputValue] = useState("");
+  const [todosList, setTodoList] = useState([]);
+  const [error, setError] = useState({
+    undefined: false,
+    taskAlreadyExist: false,
   });
-
-  useEffect(() => {
-    const storedTodoList = localStorage.getItem("todoList");
-
-    if (storedTodoList) {
-      setTodoList(JSON.parse(storedTodoList));
-    }
-  }, []);
 
   function handleSubmit(e) {
     e.preventDefault();
-
-    if (!todo) {
-      setErrors({ ...errors, emptyInput: true });
+    if (!inputValue) {
+      setError({ ...error, undefined: true });
       return;
     }
 
-    const tae = todoList.find((item) => item.text === todo);
-
-    if (tae) {
-      setErrors({ ...errors, todoAlreadyExist: true });
+    if (todosList.find((todo) => todo.name === inputValue)) {
+      setError({ ...error, taskAlreadyExist: true });
       return;
     }
 
-    const newTodoList = [...todoList, { id: nanoid(8), text: todo }];
-    setTodoList(newTodoList);
-    setTodo("");
-    setErrors({ ...errors, todoAlreadyExist: false, emptyInput: false });
-
-    localStorage.setItem("todoList", JSON.stringify(newTodoList));
+    setTodoList([...todosList, { id: nanoid(8), name: inputValue }]);
+    setError({ ...error, undefined: false, taskAlreadyExist: false });
+    setInputValue("");
   }
 
   function deleteTodo(id) {
-    const newTodoList = todoList.filter((todo) => todo.id !== id);
-    setTodoList(newTodoList);
-    setErrors({ ...errors, todoAlreadyExist: false, emptyInput: false });
+    const todoToDelete = todosList.find((todo) => todo.id === id);
+    if (confirm(`Voulez vous vraiment supprimer la tâche suivante : '${todoToDelete.name}' ?`)) {
+      setTodoList(todosList.filter((todo) => todo.id !== id));
+      setError({ ...error, undefined: false, taskAlreadyExist: false });
+    }
 
-    localStorage.setItem("todoList", JSON.stringify(newTodoList));
+    return;
+  }
+
+  function deleteAllTodos() {
+    if (confirm("Voulez vous vraiment supprimer toutes les tâches ?")) {
+      setTodoList([]);
+    }
   }
 
   let errorMessage;
-  if (todoList.length === 0) {
-    errorMessage = <p className="mt-2">Aucune tache à afficher...</p>;
-  } else {
-    if (errors.todoAlreadyExist) {
-      errorMessage = <p className="mt-2 text-red-500">Tache déjà existante...</p>;
-    }
-    if (errors.emptyInput) {
-      errorMessage = <p className="mt-2 text-red-500">Veuillez bien remplir le champ...</p>;
-    }
+  if (error.undefined) {
+    errorMessage = <p className="text-red-600">Veuillez rentrer une tâche...</p>;
+  } else if (error.taskAlreadyExist) {
+    errorMessage = <p className="text-red-600">Cette tâche à déjà été définie...</p>;
   }
 
-  if (errors.emptyInput) {
-    errorMessage = <p className="mt-2 text-red-500">Veuillez bien remplir le champ...</p>;
-  }
+  console.log(!inputValue);
 
   return (
-    <div
-      className={`min-h-screen transition-all duration-500 text-slate-50 p-8 ${
-        todo === "vertical" && "cursor-vertical-text"
-      } ${
-        todo.includes("13vlxx") || todoList.find((item) => item.text === "13vlxx")
-          ? "bg-slate-200 text-slate-950"
-          : "bg-slate-900"
-      }`}
-    >
-      <h1 className="text-3xl font-semibold select-none">React Todos</h1>
-      <form onSubmit={handleSubmit} className="flex gap-2 mt-4">
-        <input
-          onChange={(e) => setTodo(e.target.value)}
-          value={todo}
-          placeholder="Entrez une tache à réaliser"
-          className="text-slate-950 rounded w-full py-2 pl-2 outline-blue-600"
-          type="text"
-        />
-        <button
-          disabled={!todo}
-          className={`bg-blue-600 px-2 rounded hover:bg-blue-700 transition-colors duration-200 ${
-            !todo && "bg-gray-500 hover:bg-gray-600 cursor-not-allowed"
-          } ${
-            todo.includes("13vlxx") || todoList.find((item) => item.text === "13vlxx")
-              ? "bg-green-500 hover:bg-green-600 cursor-cell text-slate-50"
-              : ""
-          }`}
-        >
-          Valider
-        </button>
-      </form>
-      {errorMessage}
-      <ul
-        className={`mt-4 ${
-          todo.includes("13vlxx") || todoList.find((item) => item.text === "13vlxx")
-            ? "text-slate-50"
-            : ""
-        }`}
-      >
-        {todoList.map((todo) => (
-          <TodoList key={todo.id} content={todo} deleteTodo={deleteTodo} inputValue={todo} />
-        ))}
-      </ul>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-800 to-indigo-900">
+      <div className="min-w-[280px] sm:min-w-[450px] md:min-w-[700px] min-h-[700px] bg-slate-100 rounded-xl p-4">
+        <h1 className="text-3xl font-semibold text-center">Liste des tâches à faire</h1>
+        <h2 className="text-xl font-semibold text-center">
+          {todosList.length > 0 ? `${todosList.length} tâches en cours...` : "Bienvenue !"}
+        </h2>
+        <form onSubmit={handleSubmit} className="flex gap-2 mt-4">
+          <input
+            onChange={(e) => setInputValue(e.target.value)}
+            value={inputValue}
+            type="text"
+            className="border border-blue-600 rounded outline-none px-2 py-1 w-full"
+            placeholder="Entrez vos tâches ici..."
+            id="todo"
+          />
+          <button
+            disabled={!inputValue}
+            className={`bg-blue-600 rounded px-4 text-slate-50 hover:bg-blue-700 transition-colors duration-100 ${
+              !inputValue && "bg-gray-400 hover:bg-gray-500"
+            }`}
+          >
+            Valider
+          </button>
+        </form>
+
+        {errorMessage}
+        {todosList.length > 1 && (
+          <button
+            onClick={deleteAllTodos}
+            className=" border-2 border-red-500 w-full mt-4 rounded bg-red-200 text-black"
+          >
+            Supprimer toutes les tâches
+          </button>
+        )}
+        {todosList.length === 0 && (
+          <div className="flex flex-col justify-center items-center mt-24">
+            <img className="w-60 place-content-center" src={noTodo} alt="liste vide" />
+            <p className="mt-8 font-semibold">Aucune tâche à afficher...</p>
+            <label
+              htmlFor="todo"
+              className="bg-blue-600 text-slate-50 mt-4 px-2 py-1 rounded hover:bg-blue-700 transition-colors duration-100 cursor-pointer select-none animate-bounce"
+            >
+              Je veux en rajouter une !
+            </label>
+          </div>
+        )}
+        <ul className="mt-4">
+          {todosList.map((item) => (
+            <Todo key={item.id} todo={item} deleteTodo={deleteTodo} />
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
+
 export default App;
